@@ -1,14 +1,11 @@
 import sqlite3
-import uuid
-from models import Action, Observation, State
+from models import Action, Observation
 
 class Environment:
     def __init__(self):
         self.conn = None
         self.cursor = None
         self.current_task = 1
-        self.total_steps = 0
-        self.episode_id = str(uuid.uuid4())
         self.reset()
 
     def _setup_database(self):
@@ -30,14 +27,10 @@ class Environment:
     def reset(self):
         self._setup_database()
         self.current_task = 1
-        self.total_steps = 0
-        self.episode_id = str(uuid.uuid4())
-        
         intro = "Connected to DB. Task 1: We lost Charlie's email. Write a query to find it."
-        return Observation(result=intro, reward=0.0, done=False, episode_id=self.episode_id)
+        return Observation(result=intro)
 
     def step(self, action: Action):
-        self.total_steps += 1
         obs_result = ""
         obs_error = None
         
@@ -53,16 +46,11 @@ class Environment:
             obs_result = "SQL Syntax Error"
             obs_error = str(e)
 
-        temp_obs = Observation(result=obs_result, error=obs_error, reward=0.0, done=False, episode_id=self.episode_id)
-        reward, is_done = self._grade_task(temp_obs)
+        obs = Observation(result=obs_result, error=obs_error)
+        reward, is_done = self._grade_task(obs)
         
-        return Observation(
-            result=temp_obs.result, 
-            error=temp_obs.error, 
-            reward=reward, 
-            done=is_done, 
-            episode_id=self.episode_id
-        )
+        # Standard tuple return for the FastAPI Grader Bot
+        return obs, float(reward), bool(is_done), {}
 
     def _grade_task(self, obs: Observation):
         reward = 0.0
@@ -95,18 +83,3 @@ class Environment:
                 obs.result += "\n\n[SYSTEM] Task 3 Complete! You are a master Database Admin!"
 
         return reward, done
-
-    @property
-    def state(self):
-        """Web Server strict property requirement"""
-        return State(
-            current_task=self.current_task, 
-            step_count=self.total_steps,  
-            episode_id=self.episode_id
-        )
-
-    async def reset_async(self):
-        return self.reset()
-
-    async def step_async(self, action: Action):
-        return self.step(action)
