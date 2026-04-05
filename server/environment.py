@@ -28,7 +28,10 @@ class Environment:
         self._setup_database()
         self.current_task = 1
         intro = "Connected to DB. Task 1: We lost Charlie's email. Write a query to find it."
-        return Observation(result=intro)
+        
+        # We MUST return a tuple containing the Observation AND an empty info dictionary
+        obs = Observation(result=intro)
+        return obs, {}
 
     def step(self, action: Action):
         obs_result = ""
