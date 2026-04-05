@@ -1,9 +1,6 @@
-import os
-os.environ["ENABLE_WEB_INTERFACE"] = "true"
-
-from openenv.core.env_server import create_web_interface_app
+from openenv.core.env_server import create_fastapi_app
 from models import Action, Observation
 from server.environment import Environment
 
-# Pass the Environment CLASS directly to the server
-app = create_web_interface_app(Environment, Action, Observation)
+# Notice we use create_fastapi_app instead of the web_interface version
+app = create_fastapi_app(Environment, Action, Observation)
