@@ -1,0 +1,4 @@
+name: sql-admin
+version: 1.0.0
+description: A real-world SQL Database Administration task environment with 3 progressive tasks.
+tasks: 3
