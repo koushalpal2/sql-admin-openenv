@@ -28,10 +28,10 @@ class Environment:
         self._setup_database()
         self.current_task = 1
         intro = "Connected to DB. Task 1: We lost Charlie's email. Write a query to find it."
-        
-        # We MUST return a tuple containing the Observation AND an empty info dictionary
         obs = Observation(result=intro)
-        return obs, {}
+        
+        # FastAPI strictly expects this exact JSON payload shape
+        return {"observation": obs, "reward": 0.0, "done": False}
 
     def step(self, action: Action):
         obs_result = ""
@@ -52,8 +52,7 @@ class Environment:
         obs = Observation(result=obs_result, error=obs_error)
         reward, is_done = self._grade_task(obs)
         
-        # Standard tuple return for the FastAPI Grader Bot
-        return obs, float(reward), bool(is_done), {}
+        return {"observation": obs, "reward": float(reward), "done": bool(is_done)}
 
     def _grade_task(self, obs: Observation):
         reward = 0.0
@@ -86,3 +85,10 @@ class Environment:
                 obs.result += "\n\n[SYSTEM] Task 3 Complete! You are a master Database Admin!"
 
         return reward, done
+
+    # CRITICAL: The API wrappers the bot needs to prevent a 500 crash
+    async def reset_async(self):
+        return self.reset()
+
+    async def step_async(self, action: Action):
+        return self.step(action)
