@@ -1,6 +1,6 @@
 from openenv.core.env_server import create_fastapi_app
-from models import Action, Observation
-from server.environment import Environment
+from models import SQLAction, SQLObservation
+from server.environment import SQLEnvironment
 
-# Notice we use create_fastapi_app instead of the web_interface version
-app = create_fastapi_app(Environment, Action, Observation)
+# Pass the CLASS directly to the server, do not instantiate it first!
+app = create_fastapi_app(SQLEnvironment, SQLAction, SQLObservation)
